@@ -1,0 +1,19 @@
+﻿{% load staticfiles %}
+<!-- 自定义的js路径存放处-->
+
+<!-- 一些数据处理的自定义函数 -->
+<script type="text/javascript" src="{% static 'js/custom/form_handle.js' %}"></script>
+
+<!-- easyui的一些缺省自定义-->
+<script type="text/javascript" src="{% static 'js/custom/easyui_custom.js' %}"></script>
+
+<!-- csrf_token的值设置到cookie中  Ajax的POST必须，如果开启了CSRF -->
+<script type="text/javascript" src="{% static 'js/custom/csrf.js' %}"></script>
+
+<!-- 把datagrid格式的json数据转为tree格式 -->
+<script type="text/javascript" src="{% static 'js/custom/tree_convert.js' %}"></script>
+
+
+<!-- 一些通用自定义-->
+<script type="text/javascript" src="{% static 'js/custom/general.js' %}"></script>
+

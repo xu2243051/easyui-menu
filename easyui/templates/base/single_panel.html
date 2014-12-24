@@ -1,0 +1,6 @@
+
+<div id='{{prefix}}_panel' class="easyui-panel" data-options="fit:true,title:'{{ current_pos }}',border:false">
+    {% block panel_body %}panel{% endblock panel_body %}
+<div>
+{# list页面添加对话框内容 #}
+{% include 'tpl/dialog.html' %}

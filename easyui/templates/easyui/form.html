@@ -1,0 +1,14 @@
+{% block panel_body %}
+<div align="center">
+<form id="{{ prefix }}_form"  method="post" accept-charset="utf-8" action="{{ view_url }}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <table>
+        {{form}}
+    </table>
+
+</form>
+</div>
+<script>
+</script>
+
+{% endblock %}

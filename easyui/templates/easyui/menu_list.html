@@ -1,0 +1,92 @@
+{% extends "base/single_panel.html" %}
+{% block panel_body %}
+<table id="{{ prefix }}_treegrid" class="easyui-treegrid"></table>
+<script>
+    function {{ prefix }}_treegrid_selected(){
+        // 检查是否选择了菜单
+        selected_object = $('#{{ prefix }}_treegrid').treegrid('getChecked')
+        if(selected_object == null){
+            $.messager.alert('提示信息', '请选择菜单', 'error');
+            return false;
+        }
+        else{
+            return selected_object
+        }
+    }
+
+    function {{ prefix }}_create_sub_menu_dialog(){
+        var selected = {{ prefix }}_treegrid_selected();
+        if(selected == false){
+            // 如果没有选择菜单，直接返回FALSE，在上面的函数中执行了alert了
+            $.messager.alert('提示信息', '请选择一行', 'error')
+            return false;
+        }
+        var url  = "{% url 'easyui:MenuCreateView' %}"+ "?type=sub_menu";
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'增加子菜单'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+    function {{ prefix }}_create_root_menu_dialog(){
+        // type会在下面的url判断
+        var url  = "{% url 'easyui:MenuCreateView' %}" + "?type=root_menu";
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'增加顶级菜单'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+    function {{ prefix }}_update_dialog(){
+        selected = {{ prefix }}_treegrid_selected();
+        if(selected == false){
+            // 如果没有选择菜单，直接返回FALSE，在上面的函数中执行了alert了
+            return false;
+        }
+        var url  = "{% url 'easyui:MenuUpdateView' %}?pk=" + selected[0].id ; 
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'更新菜单'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+    function {{ prefix }}_delete_confirm(){
+        selected = {{ prefix }}_treegrid_selected();
+        if(selected == false){
+            // 如果没有选择菜单，直接返回FALSE，在上面的函数中执行了alert了
+            return false;
+        }
+        var url  = "{% url 'easyui:MenuDeleteView' %}?pk=" + selected[0].id ; 
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'删除菜单'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+</script>
+
+<script>
+    // 菜单没有增加prefix
+    var menulist_treegrid_toolbar = [
+    { text: '添加子菜单', iconCls: 'icon-add', handler:  {{ prefix }}_create_sub_menu_dialog},
+    { text: '修改菜单', iconCls: 'icon-edit', handler:  {{ prefix }}_update_dialog},
+    { text: '删除菜单', iconCls: 'icon-cancel', handler:  {{ prefix }}_delete_confirm},
+    { text: '添加顶级菜单', iconCls: 'icon-add', handler:  {{ prefix }}_create_root_menu_dialog},
+    ];
+
+
+    $('#{{ prefix }}_treegrid').treegrid({
+        url:"{% url 'easyui:MenuListView' %}",
+        fitColumns: true,
+        collapsible: true,
+        animate: true,
+        idField: 'id',
+        selectOnCheck: true,
+        treeField: 'text',
+        toolbar : menulist_treegrid_toolbar,
+        columns:[[
+            {field:'cb', title:'', checkbox:true},
+            {field:'id',title:'id',width:100},
+            {field:'text',title:'菜单名',width:100},
+            {field:'namespace',title:'app名',width:100},
+            {field:'viewname',title:'view名',width:100},
+            {field:'kwargs',title:'附加参数',width:100},
+        ]],
+        loadFilter:  tree_convert
+    });
+
+</script>
+{% include 'easyui/menu_right_menu.html'  %}
+{% endblock %}

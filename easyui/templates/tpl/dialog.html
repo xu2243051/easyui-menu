@@ -1,0 +1,40 @@
+<div id="{{prefix}}_dialog" class="easyui-dialog" title="default dialog title"    style="width:500px;height:300px;padding:10px"
+    data-options="buttons: '#{{prefix}}_dialog_buttons', closed: true,modal: true, resizable: true"
+        >
+</div>
+{%  csrf_token %}
+
+{# 定义了button #}
+<div id="{{prefix}}_dialog_buttons">
+    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+        onclick="{{prefix}}_dialog_confirm()" >确定</a>
+    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'"
+        onclick="{{prefix}}_dialog_close()">取消</a>
+    
+</div>
+
+<script>
+    function {{prefix}}_dialog_close(){
+        // cancel 退出退化框
+        $("#{{prefix}}_dialog").dialog('close');
+    }
+    function {{prefix}}_dialog_confirm(){
+        // 确认则提交表单
+        $("#{{prefix}}_dialog form").form('submit',{
+            success:function(data){
+                // 如果返回的是页面，一般都有div这个tag, 所以通过判断这个标签
+                if(data == "success"){
+                    $("#{{prefix}}_dialog").dialog('close');
+                    $("#{{prefix}}_treegrid").treegrid('reload');
+                    $("#{{prefix}}_datagrid").datagrid('reload');
+                }
+                else{
+                    var form = $('#{{prefix}}_dialog form').form();
+                    //alert(data)
+                    form.html(data);
+                }
+            }
+        });
+    }
+    
+</script>

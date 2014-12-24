@@ -1,0 +1,100 @@
+﻿{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <title>{% block title %}om{% endblock title %}</title>
+    <meta name="description" content="operation and maintain">
+    <meta name="author" content="xpy">
+
+    {% include "tpl/home/theme.html" %}
+    {% include "tpl/home/head_js.html" %}
+
+    {% include "tpl/home/custom_css.html" %}
+    {% include "tpl/home/custom_js.html" %}
+
+<!--     <script type="text/javascript">
+    var theme = $.cookie('theme') || 'default'; //global variable
+    $(document).ready(function(){
+        $('link[rel*=style][title]').each(function(i){
+            this.disabled = true;
+            if (this.getAttribute('title') == theme) this.disabled = false;
+        });
+    });
+    </script> -->
+
+    {% block extra_css %}{% endblock extra_css %}
+  </head>
+    <body class="easyui-layout">
+        <div id="toparea" data-options="region:'north',border:false">
+            <div id="topmenu" class="easyui-panel" data-options="fit:true,border:false">
+                <a class="logo" >运维平台</a>
+                <ul class="nav">
+        
+                    <li><a class='focus' href="javascript:;" >我的运维</a> </li>
+                    <li><a href="javascript:;" >其他链接</a></li>
+                    <li><a href="https://docs.djangoproject.com/en/1.6/" target="_blank">Django官网</a></li>
+                    <li><a href="/admin/" target="_blank">admin接口</a></li>
+                </ul>
+                <ul class="nav-right">
+                    <li>
+                    <span>您好！ {{ user }}  | <a href="{% url 'easyui:logout' %}">[退出]</a></span>  
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+        <!-- 左侧菜单 -->
+        <div id="leftarea"  data-options="iconCls:'icons-other-house',region:'west',title:'操作菜单',split:true">
+            <!--div id="leftmenu" class="easyui-accordion"  data-options="fit:true,border:false">
+            </div-->
+            {% include "tpl/home/left_menu.html" %}
+        </div>
+
+        <!-- 内容 -->
+        <div id="mainarea" data-options="region:'center'">
+            <div id="pagetabs" class="easyui-tabs" data-options="tabPosition:'bottom', fit:true, border:false">
+                <div title="注意" style="padding:10px">
+                    <p style="font-size:14px">这个页面使用了python、easyui.</p>
+                    <ul>
+                        <li>点击左边的菜单，会刷新链接</li>
+                        <li>下边有多个页面的标签，点击切换不会刷新页面</li>
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+
+    <script>
+/*    //主题内容初始化
+    function themeInit(row){
+        if(row.value == theme) row.selected = true;
+        var opts = $('#themeswitchcombobox').combobox('options');
+        return row[opts.textField];
+    }
+
+   //切换主题
+    function onChangeTheme(theme){
+        $('link[rel*=style][title]').each(function(i){
+            this.disabled = true;
+            if (this.getAttribute('title') == theme) this.disabled = false;
+        });
+        $.cookie('theme', theme, {expires:3650});
+    }
+    */
+
+    //退出登录
+    function logout(){
+        $.messager.confirm('提示信息', '确定要退出登录吗？', function(result){
+            if(result) alert('跳转到退出页面');
+        });
+    }
+    </script>
+
+
+    </body>
+</html>
+

@@ -1,0 +1,140 @@
+{% extends "base/single_panel.html" %}
+{% block panel_body %}
+<table id="{{ prefix }}_datagrid" class="easyui-datagrid"></table>
+
+<div id="{{ prefix }}_datagrid_toolbar">
+        {% block dialog %}
+    <a  class="easyui-linkbutton" iconCls='icon-add' plain="true" onclick="{{ prefix }}_create_dialog()"} >增加{{ verbose_name }}</a>
+    <a  class="easyui-linkbutton" iconCls='icon-edit' plain="true" onclick="{{ prefix }}_update_dialog()">编辑{{ verbose_name }}</a>
+    <a  class="easyui-linkbutton" data-options="iconCls:'icon-cancel',plain:true" onclick="{{ prefix }}_delete_dialog()">删除{{ verbose_name }}</a>
+    <span style="color:blue;">增删改，即使选择了多行，也只对第一行生效</span>
+        {% endblock dialog %}
+
+        {% block menu_command %}
+        <div class="easyui-panel" style="padding:5px;">
+            <a href="#" class="easyui-menubutton" data-options="plain:false, menu:'#{{ prefix }}_menu_info'">菜单命令例子</a>
+            <a href="#" class="easyui-menubutton" data-options="plain:false, menu:'#{{ prefix }}_menu_content'">查看游戏信息</a>
+        </div>
+        <div id="{{ prefix }}_menu_info" >
+            <div class="{{ prefix }}_command" value='get_crt_file_path'>命令例子</div>
+            <div class="menu-sep"></div>
+            <div>
+                <span>子菜单</span>
+                <div>
+                    <div class="{{ prefix }}_confirm_command" value='close_game_port'>确认例子</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="{{ prefix }}_menu_content" class="menu-content" style="background:#f0f0f0;padding:10px;text-align:left">
+            <p style="font-size:14px;color:#444;">Try jQuery EasyUI to build your modern, interactive, javascript applications.</p>
+        </div>
+        {% endblock menu_command %}
+
+    <form id='{{ prefix }}_datagrid_form'>
+        {% block form_body %}
+        名字:<input  name='name__icontains' >
+        {% endblock form_body %}
+        <a  class="easyui-linkbutton" iconCls="icons-map-magnifier"  onclick="{{ prefix }}_datagrid_search()" >查 询</a>
+    </form>    
+</div>
+
+
+<script>
+    function {{ prefix }}_datagrid_selections(){
+        // 检查是否选择了菜单
+        var selected_objects = $('#{{ prefix }}_datagrid').datagrid('getChecked')
+        if(selected_objects.length == 0){
+            $.messager.alert('提示信息', '请选择至少一行', 'error');
+            return false;
+        }
+        else{
+            return selected_objects
+        }
+    }
+
+    function {{ prefix }}_datagrid_selected(){
+        // 检查是否选择了菜单
+        selected_object = $('#{{ prefix }}_datagrid').datagrid('getSelected')
+        if(selected_object == null){
+            $.messager.alert('提示信息', '请选择{{ verbose_name  }}', 'error');
+            return false;
+        }
+        else{
+            return selected_object
+        }
+    } 
+    function {{ prefix }}_create_dialog(){
+        var url  = "{{ create_url }}";
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'增加{{ verbose_name  }}'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+    function {{ prefix }}_update_dialog(){
+        selected = {{ prefix }}_datagrid_selected();
+        if(selected == false){
+            // 如果没有选择菜单，直接返回FALSE，在上面的函数中执行了alert了
+            return false;
+        }
+        var url  = "{{ update_url }}?pk=" + selected.id ;
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'更新{{ verbose_name  }}'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+    function {{ prefix }}_delete_dialog(){
+        selected = {{ prefix }}_datagrid_selected();
+        if(selected == false){
+            // 如果没有选择菜单，直接返回FALSE，在上面的函数中执行了alert了
+            return false;
+        }
+        var url  = "{{ delete_url }}?pk=" + selected.id ;
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'删除{{ verbose_name  }}'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+    function {{ prefix }}_dblclick_update_dialog(rowIndex, rowData){
+        var url  = "{{ update_url }}?pk=" + rowData.id ;
+        $('#{{ prefix }}_dialog').dialog({href:url, title:'更新{{ verbose_name  }}'});
+        $('#{{ prefix }}_dialog').dialog('open');
+    }
+
+    function {{ prefix }}_datagrid_search(){
+        var value_pair = get_value_pair_from_formarray($('#{{ prefix }}_datagrid_form').serializeArray());
+        $('#{{ prefix }}_datagrid').datagrid('load', value_pair);
+    }
+</script>
+<script>
+    {% block datagrid %}
+    
+    $('#{{ prefix }}_datagrid').datagrid({
+        url:"{{ view_url }}",
+        method: 'post',
+        fitColumns: true,
+        checkbox: true,
+        pagination: true,
+        pageSize: 50, 
+        {% if view.single_select %}
+        {# EasyUIListMixin 中定义了single_select为True，设置为False可以多选 #}
+        singleSelect : true,
+        {% endif %}
+        toolbar:'#{{ prefix }}_datagrid_toolbar',
+        onDblClickRow:{{ prefix }}_dblclick_update_dialog,
+        //onClickCell: function(rowIndex, field, value){alert(value);},
+
+        {% block datagrid_columns %}
+        columns:[[
+            {field:'cb', title:'', checkbox:true},
+            {field:'id',title:'id',width:100},
+            {field:'ip',title:'ip',width:100},
+        ]],
+        {% endblock datagrid_columns %}
+
+        checkOnSelect : true,
+        selectOnCheck : true,
+        checkbox : true, 
+        {{ options|safe }}
+    });
+    {% endblock %}
+
+</script>
+{% endblock %}

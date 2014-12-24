@@ -1,0 +1,36 @@
+{% block panel_body %}
+<div align="center">
+<form id="{{ prefix }}_form"  method="post" accept-charset="utf-8" action="{{ view_url }}">
+    {#action="{{ view_url }}"> #}
+    {% csrf_token %}
+    <table>
+        {{form}}
+    </table>
+
+</form>
+</div>
+<script>
+    // id_easyui_menucreateview-parent_id 这个ID是有规律的,我是浏览器直接DEBUG的
+    $('#id_{{ prefix }}-parent_id').combotree({
+        url: "{% url 'easyui:MenuListView' %}",
+        loadFilter: function(rows){
+            return tree_convert(rows);
+        },
+        onLoadSuccess: function(){
+            selected_object = $('#easyui_menulistview_treegrid').treegrid('getSelected');
+            var p_id = 0;
+            if(selected_object){
+                // 是编辑菜单的View, id 是selected.parent_id
+                p_id = selected_object.parent_id;
+                if("{{ prefix }}".search('create') != -1){
+                    // 是添加菜单的View, id是selected.id
+                    p_id = selected_object.id
+                }
+            }
+            $('#id_{{ prefix }}-parent_id').combotree('setValue', p_id);
+        }
+    }); 
+
+</script>
+
+{% endblock %}

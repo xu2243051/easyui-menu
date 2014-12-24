@@ -1,0 +1,18 @@
+<script>
+function {{prefix}}_operate_callback(data){
+    if(data.status == 0){
+        $('#{{ prefix }}_datagrid').datagrid('updateRow', {index:data.row_index, row:{info:data.message}})
+        $('#{{ prefix }}_datagrid').datagrid('autoSizeColumn', 'info')
+    }
+    else{
+        error_message = data.error ? data.error : '执行出错'; //如果没有错误信息，用默认的提示
+        $('#{{ prefix }}_datagrid').datagrid('updateRow', {index:data.row_index, row:{info:'<strong style="color:red">'+error_message+'<strong>'}})
+        $('#{{ prefix }}_datagrid').datagrid('autoSizeColumn', 'info')
+    }
+}
+function access_error(){
+    // 访问链接，没有正常返回的错误
+    // 1、命令不存在对应的函数  2、操作出现异常  3、访问不到链接
+    $.messager.alert('提示信息', '访问不到链接, 忽略等待操作的提示，多个操作，如果超过5分钟没结果，应该是失败了', 'error');
+}
+</script>

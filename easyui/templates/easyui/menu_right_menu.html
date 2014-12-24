@@ -1,0 +1,38 @@
+<div id="menu_treegrid_right_menu" class="easyui-menu" data-options="onClick:{{prefix}}_Menu_Handler">
+    <div data-options="name:'add',iconCls:'icon-add'">增加{{ verbose_name }}</div>
+    <div data-options="name:'edit',iconCls:'icon-edit'">编辑{{ verbose_name }}</div>
+    <div class="menu-sep"></div>
+    <div data-options="name:'del',iconCls:'icon-cancel'">删除{{ verbose_name }}</div>
+
+</div>
+<script>
+
+    // 从这里知道最下面的都是右键菜单
+    function {{prefix}}_Menu_Handler(item){
+        if(!item.name) return;
+        switch(item.name){
+            case 'add': //刷新后台
+                {{ prefix }}_create_dialog();
+    
+                break;
+            case 'edit': //更新缓存
+                {{ prefix }}_update_dialog();
+    
+                break;
+            case 'del': //退出登录
+                {{ prefix }}_delete_confirm();
+    
+                break;
+        }
+    }
+    function {{prefix}}_show_right_menu(){
+        $('#menu_treegrid_right_menu').menu('show', {
+            left: 300,
+            top: 200,
+             });
+    }
+
+    $('#{{ prefix }}_treegrid').treegrid({'onDblClickCell': {{prefix}}_show_right_menu});
+    $('#{{ prefix }}_datagrid').datagrid({'onDblClickCell': {{prefix}}_show_right_menu});
+</script>
+

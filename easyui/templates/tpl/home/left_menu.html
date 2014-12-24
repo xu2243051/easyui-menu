@@ -1,0 +1,58 @@
+﻿<!-- http://www.cnblogs.com/puke/archive/2012/08/08/2627820.html  树的扩展-->
+{% csrf_token %}
+<ul id="left_menu"></ul>
+
+<script>
+// content  of menu
+$('#left_menu').tree({
+    //url: 'http://10.2.4.242:8000/menu/menulist/',
+    url: "{% url 'easyui:MenuListView' %}",
+    //method: 'get',
+    loadFilter: function(rows){
+        return tree_convert(rows);
+    },
+    onClick: open_url
+});
+
+
+
+function get_url_from_menu(node){
+    // 通过菜单node的namespace和url_name获取相对应的链接
+    // 并且把对应的URL 设置到node中
+    // 注意 async : false是必须的
+    var href_to_get_url = "{% url 'easyui:get_url' %}"; 
+	$.ajax({ 
+        type : "get", 
+        url : href_to_get_url + "?menu_id=" + node.id, 
+        async : false, 
+        success : function(data){ 
+        	node.url = data;
+        } 
+    }); 
+  
+}
+// when click on the menu, it will open an url in  $('#pagetabs').tabs()
+function open_url(node){
+    // 如果菜单是不是叶子，则点击不会打开页面到tab
+    var k = $('#left_menu').tree('isLeaf', node.target);
+    if(k == false){
+        $('#left_menu').tree('toggle', node.target);
+        return true
+    }
+    // 点击左边菜单，会刷新点击的页面，点击tabs下面的标签不会刷新
+    // 设置了node.url的值
+    get_url_from_menu(node);
+
+	if($('#pagetabs').tabs('exists', node.text)){
+        $('#pagetabs').tabs('close', node.text);
+	}
+    $('#pagetabs').tabs('add',{
+        title:node.text,
+        closable : true,
+        cache: true,
+        href : node.url,
+        //content: '<iframe scrolling="yes" src="'+ url  +'" style="width:100%;height:100%;"></iframe>'
+        });
+	
+}
+</script>

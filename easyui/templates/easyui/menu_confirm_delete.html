@@ -1,0 +1,10 @@
+{% block panel_body %}
+<div align="center">
+<form id="{{ prefix }}_form"  method="post" accept-charset="utf-8" action="{{ view_url }}">
+    {% csrf_token %}
+    是否删除 <span style="color:red">{{ object.text }}</span> 这个菜单，删除将不可恢复!
+
+</form>
+</div>
+
+{% endblock %}

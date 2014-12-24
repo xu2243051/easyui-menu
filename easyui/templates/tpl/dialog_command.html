@@ -1,0 +1,41 @@
+<!-- 这个对话框是在执行操作命令的时候使用的，不会reload datagrid-->
+<div id="{{prefix}}_dialog_command" class="easyui-dialog" title="default dialog title"    style="width:500px;height:300px;padding:10px"
+    data-options="buttons: '#{{prefix}}_dialog_command_buttons', closed: true,modal: true, resizable: true"
+        >
+</div>
+{%  csrf_token %}
+
+{# 定义了button #}
+<div id="{{prefix}}_dialog_command_buttons">
+    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-ok'"
+        onclick="{{prefix}}_dialog_command_confirm()" >确定</a>
+    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel'"
+        onclick="{{prefix}}_dialog_command_close()">取消</a>
+    
+</div>
+
+<script>
+    function {{prefix}}_dialog_command_close(){
+        // cancel 退出退化框
+        $("#{{prefix}}_dialog_command").dialog('close');
+    }
+    function {{prefix}}_dialog_command_confirm(){
+        // 确认则提交表单
+        $("#{{prefix}}_dialog_command form").form('submit',{
+            success:function(data){
+                // 如果返回的是页面，一般都有div这个tag, 所以通过判断这个标签
+                if(data.search('div') == -1){
+                    // 返回的是json数据， 检查json数据
+                    var data_json = JSON.parse(data);
+                    $("#{{prefix}}_dialog_command").dialog('close');
+                }
+                else{
+                    var form = $('#{{prefix}}_dialog_command form').form();
+                    //alert(data)
+                    form.html(data);
+                }
+            }
+        });
+    }
+    
+</script>
