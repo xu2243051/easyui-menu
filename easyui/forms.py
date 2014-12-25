@@ -6,7 +6,7 @@ sys.setdefaultencoding('utf8')
 
 from django import forms
 
-from .models import Menu, UserMenu
+from .models import Menu, UserMenu, GroupMenu
 class UserLoginForm(forms.Form):
     required_css_class = 'required'
     error_css_class = 'error'
@@ -43,6 +43,16 @@ class UserMenuForm(forms.ModelForm):
         model = UserMenu
         widgets = {
                 'user':forms.Select(attrs={'class':'easyui-combobox','data-options':'required:true'}),
+                'menus_show':forms.HiddenInput(),
+                'menus_checked':forms.HiddenInput(),
+                }
+
+class GroupMenuForm(forms.ModelForm):
+
+    class Meta:
+        model = GroupMenu
+        widgets = {
+                'group':forms.Select(attrs={'class':'easyui-combobox','data-options':'required:true'}),
                 'menus_show':forms.HiddenInput(),
                 'menus_checked':forms.HiddenInput(),
                 }

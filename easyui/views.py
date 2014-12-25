@@ -1,14 +1,19 @@
 #!coding:utf-8
-from django.shortcuts import render
+import json
+
+from django.db.models import get_model
+from django.core.urlresolvers import reverse
+from django.contrib.auth import authenticate, logout, login
 from django.http import  HttpResponseRedirect, HttpResponse
 
-from easyui.models import Menu
-# Create your views here.
+from .models import Menu, UserMenu, GroupMenu
+from .forms import  UserMenuForm, GroupMenuForm
+from .forms import UserLoginForm
+from .forms import RootMenuForm, SubMenuForm, MenuForm
 from easyui.mixins.view_mixins import EasyUICreateView, EasyUIUpdateView, EasyUIDeleteView, EasyUIDatagridView
 from easyui.mixins.easyui_mixins import CsrfExemptMixin
-
-
 from easyui.mixins.permission_mixins import LoginRequiredMixin
+
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormMixin
 
@@ -41,9 +46,6 @@ class HomeView(LoginRequiredMixin, TemplateView):
             kwargs['user'] = self.request.user
             return kwargs
 
-from django.contrib.auth import authenticate, logout, login
-from django.core.urlresolvers import reverse
-from easyui.forms import UserLoginForm
 class LoginView(FormMixin, TemplateView):
     form_class = UserLoginForm
     template_name = 'login.html'
@@ -85,8 +87,6 @@ def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('easyui:home'))
 
-import json
-from django.db.models import get_model
 class MenuListView(CsrfExemptMixin, EasyUIDatagridView):
     """
     MenuListView 根据权限返回menu的数据
@@ -141,6 +141,7 @@ class MenuListView(CsrfExemptMixin, EasyUIDatagridView):
         #    # is_staff 为true,可以登录后台,一般为公司内部员工
         #    pass
         else:
+            # 普通用户的菜单在这里进行处理
             menu_id_list = []
             usermenu_set = request.user.usermenu_set.all()
             if(usermenu_set):
@@ -166,7 +167,6 @@ class MenuListView(CsrfExemptMixin, EasyUIDatagridView):
                 new_data = []
                 for row in data:
                     if id_dict.has_key(int(row['id'])):
-                        print row
                         new_data.append(row)
 
                 data = new_data
@@ -174,11 +174,8 @@ class MenuListView(CsrfExemptMixin, EasyUIDatagridView):
             else:
                 data = []
 
-            # 普通用户的菜单在这里进行处理
-        # print data
         return self.render_to_json_response(data)
 
-from .forms import RootMenuForm, SubMenuForm, MenuForm
 class MenuCreateView(EasyUICreateView):
     model = Menu
     form_class = MenuForm
@@ -201,8 +198,6 @@ class MenuUpdateView(EasyUIUpdateView):
 class MenuDeleteView(EasyUIDeleteView):
     model = Menu
 
-from .models import  UserMenu
-from .forms import  UserMenuForm
 class UserMenuCreateView(EasyUICreateView):
     model = UserMenu
     form_class = UserMenuForm
@@ -227,3 +222,28 @@ class UserMenuListView(EasyUIDatagridView):
 
     """
     model = UserMenu
+
+
+class GroupMenuCreateView(EasyUICreateView):
+    model = GroupMenu
+    form_class = GroupMenuForm
+
+class GroupMenuUpdateView(EasyUIUpdateView):
+    model = GroupMenu
+    form_class = GroupMenuForm
+
+class GroupMenuDeleteView(EasyUIDeleteView):
+    model = GroupMenu
+
+
+class GroupMenuListView(EasyUIDatagridView):
+    model = GroupMenu
+    options = """
+        columns:[[
+            {field:'cb', title:'', checkbox:true},
+            {field:'id',title:'id',width:100},
+            {field:'group',title:'用户组',width:100},
+            {field:'menus_show',title:'要显示的菜单ID',width:100},
+            {field:'menus_checked',title:'checked菜单',width:100},
+        ]]
+    """
