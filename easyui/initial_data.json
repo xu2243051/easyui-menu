@@ -1,0 +1,54 @@
+[
+{
+  "fields": {
+    "viewname": "",
+    "text": "\u6839\u83dc\u5355",
+    "namespace": "",
+    "is_system": false,
+    "is_root": true,
+    "parent_id": 0,
+    "kwargs": ""
+  },
+  "model": "easyui.menu",
+  "pk": 1
+},
+{
+  "fields": {
+    "viewname": "MenuListView",
+    "text": "\u83dc\u5355\u5217\u8868",
+    "namespace": "easyui",
+    "is_system": false,
+    "is_root": false,
+    "parent_id": 1,
+    "kwargs": ""
+  },
+  "model": "easyui.menu",
+  "pk": 2
+},
+{
+  "fields": {
+    "viewname": "UserMenuListView",
+    "text": "\u7528\u6237\u83dc\u5355\u6743\u9650",
+    "namespace": "easyui",
+    "is_system": false,
+    "is_root": false,
+    "parent_id": 1,
+    "kwargs": ""
+  },
+  "model": "easyui.menu",
+  "pk": 3 
+},
+{
+  "fields": {
+    "viewname": "GroupMenuListView",
+    "text": "\u7528\u6237\u7ec4\u83dc\u5355\u6743\u9650",
+    "namespace": "easyui",
+    "is_system": false,
+    "is_root": false,
+    "parent_id": 1,
+    "kwargs": ""
+  },
+  "model": "easyui.menu",
+  "pk": 4
+}
+]

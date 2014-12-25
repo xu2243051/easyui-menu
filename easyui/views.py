@@ -55,7 +55,6 @@ class LoginView(FormMixin, TemplateView):
         user = form.cleaned_data['user']
         passwd = form.cleaned_data['passwd']
         user = authenticate(username=user, password=passwd)
-        print user
 
         if user is not None:
             # the password verified for the user 
@@ -112,8 +111,6 @@ class MenuListView(CsrfExemptMixin, EasyUIDatagridView):
         checked_id = []
         qd = request.GET
         query_dict = dict(qd.items())
-        checked_id = []
-        print query_dict
         if query_dict:
             #object = get_object(**query_dict)
             app_label = query_dict['app_label']
