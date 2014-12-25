@@ -4,7 +4,7 @@ from django.http import  HttpResponseRedirect, HttpResponse
 
 from easyui.models import Menu
 # Create your views here.
-from easyui.mixins import view_mixins 
+from easyui.mixins.view_mixins import EasyUICreateView, EasyUIUpdateView, EasyUIDeleteView, EasyUIDatagridView
 from easyui.mixins.easyui_mixins import CsrfExemptMixin
 
 
@@ -87,7 +87,7 @@ def logout_view(request):
 
 import json
 from django.db.models import get_model
-class MenuListView(CsrfExemptMixin, view_mixins.EasyUIDatagridView):
+class MenuListView(CsrfExemptMixin, EasyUIDatagridView):
     """
     MenuListView 根据权限返回menu的数据
     用户菜单权限，只有超级用户和staff用户可以操作
@@ -103,9 +103,9 @@ class MenuListView(CsrfExemptMixin, view_mixins.EasyUIDatagridView):
     def get_menu_checked(self, request):
         """
         获取用户或者用户组checked的菜单列表
-        myusermenu_form.html 中定义
-        myusermenu  这两个model的定义类似，比如menus_checked和menus_show
-        mygroupmenu
+        usermenu_form.html 中定义
+        usermenu  这两个model的定义类似，比如menus_checked和menus_show
+        groupmenu
         @return  eg. ['1', '8', '9', '10' ]
         获取用户或者用户组的check_ids,会给出app_label, model_name, pk eg. /easyui/menulistview/?app_label=easyui&model_name=UserMenu&pk=1
         """
@@ -113,6 +113,7 @@ class MenuListView(CsrfExemptMixin, view_mixins.EasyUIDatagridView):
         qd = request.GET
         query_dict = dict(qd.items())
         checked_id = []
+        print query_dict
         if query_dict:
             #object = get_object(**query_dict)
             app_label = query_dict['app_label']
@@ -128,7 +129,6 @@ class MenuListView(CsrfExemptMixin, view_mixins.EasyUIDatagridView):
         # 这个是tree的view，只需要直接返回rows中的内容
         data = self.get_easyui_context()['rows']
 
-        # 把
         checked_id = self.get_menu_checked(request)
         for row in data:
             if row['id'] in checked_id:
@@ -137,34 +137,36 @@ class MenuListView(CsrfExemptMixin, view_mixins.EasyUIDatagridView):
 
         if request.user.is_superuser:
             pass
-        elif request.user.is_staff:
-            # is_staff 为true,可以登录后台,一般为公司内部员工
-            pass
+        #elif request.user.is_staff:
+        #    # is_staff 为true,可以登录后台,一般为公司内部员工
+        #    pass
         else:
             menu_id_list = []
-            myusermenu_set = request.user.myusermenu_set.all()
-            if(myusermenu_set):
+            usermenu_set = request.user.usermenu_set.all()
+            if(usermenu_set):
                 # 判断一个用户是否有菜单的记录
                 # 用户的显示菜单列表
-                menu_list = myusermenu_set[0].menus_show.split(',')
+                menu_list = usermenu_set[0].menus_show.split(',')
                 menu_id_list.extend(menu_list)
 
             # 处理组的权限
             groups = request.user.groups.all()
             for group in groups:
-                mygroupmenu_set= group.mygroupmenu_set.all()
+                groupmenu_set= group.groupmenu_set.all()
                 # 判断一个用户组是否有菜单的记录
-                if(mygroupmenu_set):
-                    menu_list = mygroupmenu_set[0].menus_show.split(',')
+                if(groupmenu_set):
+                    menu_list = groupmenu_set[0].menus_show.split(',')
                     menu_id_list.extend(menu_list)
             menu_id_set = set(menu_id_list)
 
             if(menu_id_set):
-                # 把id的列表处理为字典，方便等会的比较
+                # 把id的列表处理为字典，方便等会的比较, 类型统一为int
+                menu_id_set = [int(i) for i in menu_id_set]
                 id_dict = dict(zip(menu_id_set, menu_id_set))
                 new_data = []
                 for row in data:
-                    if id_dict.has_key(row['id']):
+                    if id_dict.has_key(int(row['id'])):
+                        print row
                         new_data.append(row)
 
                 data = new_data
@@ -177,7 +179,7 @@ class MenuListView(CsrfExemptMixin, view_mixins.EasyUIDatagridView):
         return self.render_to_json_response(data)
 
 from .forms import RootMenuForm, SubMenuForm, MenuForm
-class MenuCreateView(view_mixins.EasyUICreateView):
+class MenuCreateView(EasyUICreateView):
     model = Menu
     form_class = MenuForm
     sub_form_class = SubMenuForm
@@ -192,9 +194,36 @@ class MenuCreateView(view_mixins.EasyUICreateView):
         else:
             raise Exception('创建菜单出错,请传type参数')
 
-class MenuUpdateView(view_mixins.EasyUIUpdateView):
+class MenuUpdateView(EasyUIUpdateView):
     model = Menu
     form_class = MenuForm
 
-class MenuDeleteView(view_mixins.EasyUIDeleteView):
+class MenuDeleteView(EasyUIDeleteView):
     model = Menu
+
+from .models import  UserMenu
+from .forms import  UserMenuForm
+class UserMenuCreateView(EasyUICreateView):
+    model = UserMenu
+    form_class = UserMenuForm
+
+class UserMenuUpdateView(EasyUIUpdateView):
+    model = UserMenu
+    form_class = UserMenuForm
+
+class UserMenuDeleteView(EasyUIDeleteView):
+    model = UserMenu
+
+
+class UserMenuListView(EasyUIDatagridView):
+    options = """
+        columns:[[
+            {field:'cb', title:'', checkbox:true},
+            {field:'id',title:'id',width:100},
+            {field:'user',title:'用户',width:100},
+            {field:'menus_show',title:'要显示的菜单ID',width:100},
+            {field:'menus_checked',title:'checked菜单',width:100},
+        ]]
+
+    """
+    model = UserMenu

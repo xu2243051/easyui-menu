@@ -6,7 +6,7 @@ sys.setdefaultencoding('utf8')
 
 from django import forms
 
-from .models import Menu
+from .models import Menu, UserMenu
 class UserLoginForm(forms.Form):
     required_css_class = 'required'
     error_css_class = 'error'
@@ -36,3 +36,13 @@ class SubMenuForm(MenuForm):
 
 class RootMenuForm(MenuForm):
     is_root = forms.BooleanField(label='是否顶级节点', widget=forms.CheckboxInput(attrs={'onclick':"return false"}), required=False, initial=True)
+
+class UserMenuForm(forms.ModelForm):
+
+    class Meta:
+        model = UserMenu
+        widgets = {
+                'user':forms.Select(attrs={'class':'easyui-combobox','data-options':'required:true'}),
+                'menus_show':forms.HiddenInput(),
+                'menus_checked':forms.HiddenInput(),
+                }

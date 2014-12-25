@@ -10,27 +10,6 @@
     <span style="color:blue;">增删改，即使选择了多行，也只对第一行生效</span>
         {% endblock dialog %}
 
-        {% block menu_command %}
-        <div class="easyui-panel" style="padding:5px;">
-            <a href="#" class="easyui-menubutton" data-options="plain:false, menu:'#{{ prefix }}_menu_info'">菜单命令例子</a>
-            <a href="#" class="easyui-menubutton" data-options="plain:false, menu:'#{{ prefix }}_menu_content'">查看游戏信息</a>
-        </div>
-        <div id="{{ prefix }}_menu_info" >
-            <div class="{{ prefix }}_command" value='get_crt_file_path'>命令例子</div>
-            <div class="menu-sep"></div>
-            <div>
-                <span>子菜单</span>
-                <div>
-                    <div class="{{ prefix }}_confirm_command" value='close_game_port'>确认例子</div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="{{ prefix }}_menu_content" class="menu-content" style="background:#f0f0f0;padding:10px;text-align:left">
-            <p style="font-size:14px;color:#444;">Try jQuery EasyUI to build your modern, interactive, javascript applications.</p>
-        </div>
-        {% endblock menu_command %}
-
     <form id='{{ prefix }}_datagrid_form'>
         {% block form_body %}
         名字:<input  name='name__icontains' >
@@ -110,7 +89,8 @@
         url:"{{ view_url }}",
         method: 'post',
         fitColumns: true,
-        checkbox: true,
+        selectOnCheck: true,
+        checkOnSelect: true,
         pagination: true,
         pageSize: 50, 
         {% if view.single_select %}

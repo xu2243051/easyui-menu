@@ -17,7 +17,7 @@ class Menu(ModelMixin, models.Model):
     namespace = models.CharField('APP名', max_length=100)
     viewname = models.CharField('view名', max_length=100)
     kwargs = models.CharField('附加参数', max_length=100, blank=True)
-    is_system = models.BooleanField('是否为系统菜单', default=False, blank=True, help_text='系统菜单只对超级用户和后台用户显示')
+    is_system = models.BooleanField('是否为系统菜单', default=False, blank=True, help_text='系统菜单只对超级用户和后台用户显示', editable=False)
 
     def get_absolute_url(self):
         return reverse_lazy('menu:MenuListView')
@@ -31,3 +31,22 @@ class Menu(ModelMixin, models.Model):
 
 
 
+class UserMenu(ModelMixin, models.Model):
+    """
+    用户的菜单权限
+    """
+    user = models.ForeignKey(User, verbose_name='用户', unique=True)
+    menus_show = models.TextField('菜单显示权限', help_text='JSON格式的字符串，在菜单显示', blank=True)
+    menus_checked = models.TextField('菜单checked', help_text='JSON格式的字符串, checked用户权限配置', blank=True)
+    def get_absolute_url(self):
+        return reverse_lazy('menu:MyUserMenuListView')
+
+    def __unicode__(self):
+        return unicode(self.user)
+
+    class Meta:
+        verbose_name = '用户菜单权限'
+        verbose_name_plural = verbose_name
+        #permissions = (
+        #('list_myusermenu', '查看'+verbose_name),
+        #)

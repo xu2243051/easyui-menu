@@ -1,0 +1,88 @@
+{% block panel_body %}
+<div align="center">
+<form id="{{ prefix }}_form"  method="post" accept-charset="utf-8" action="{{ view_url }}">
+    {#action="{{ view_url }}"> #}
+    {% csrf_token %}
+    <table>
+        {{form}}
+        <tr>
+            <td>菜单权限</td>
+            <td>
+                <select id="id_{{ prefix }}-menu" class="easyui-combotree" style="width:200px" multiple></select>
+            </td>
+        </tr>
+    </table>
+
+</form>
+</div>
+<script>
+    // template中的ID，和浏览器中的ID
+    // #id_{{ prefix }}-menus_show
+    // $('#id_menu_myusermenucreateview-menus_show')
+
+    // {{ prefix }} == easyui_usermenucreateview  #创建页面
+    // {{ prefix }} == easyui_usermenuupdateview  # 更新页面
+    var combotree_url = "{% url 'easyui:MenuListView' %}";
+    if("{{ prefix }}".search('updateview') != -1){
+        var d = $('#{{ app_label }}_{{ model_name|lower }}updateview_form').parents('.easyui-dialog')
+        var o = d.dialog('options')
+        var href_list = o.href.split('?')  //["/menu/MyUserMenuUpdateView/", "pk=1"]
+        // MenuListView 处理下面3个参数
+        combotree_url = combotree_url + '?' + href_list[1] + '&model_name={{ model_name }}&app_label={{ app_label }}';
+        // /menu/MenuListView/?pk=1&model_name=MyUserMenu&app_label=menu
+    }
+    $('#id_{{ prefix }}-menu').combotree({        
+        // 定义权限裁定
+        url: combotree_url,
+        //onlyLeafCheck : true,
+        loadFilter: function(rows){
+            return tree_convert(rows);
+        },
+    })
+    function {{ prefix }}_get_checked(){
+        // return checked nodes's id
+        var t = $('#id_{{ prefix }}-menu').combotree('tree');
+        var object_list = t.tree('getChecked');
+        var id_list = [];
+        for (key in object_list){
+            id_list.push(object_list[key].id);
+        }
+        // 返回的是ID 列表
+        return id_list
+    }
+
+    function {{ prefix }}_get_show(){
+        // return id of menu should show for ordinary user
+        var t = $('#id_{{ prefix }}-menu').combotree('tree');
+        var object_list = t.tree('getChecked', ['checked','indeterminate']);
+        var id_list = [];
+        for (key in object_list){
+            // 把checked的id添加到ID列表，然后递归添加其父ID
+            o = object_list[key] // object checked
+            id_list.push(o.id);
+        }
+        // 返回的是ID 列表
+        return id_list
+    }
+
+    $('#{{ prefix }}_form').form({
+        onSubmit : {{ prefix }}_form_on_submit
+    })
+
+    function {{ prefix }}_form_on_submit(){
+        if ($('#{{ prefix }}_form').form('validate') == false){
+            return false
+        }
+        var checked_id_list = {{ prefix }}_get_checked();
+        $('#id_{{ prefix }}-menus_checked').val(checked_id_list.toString())
+
+        var show_id_list = {{ prefix }}_get_show();
+        $('#id_{{ prefix }}-menus_show').val(show_id_list.toString())
+        return true
+
+    }
+
+
+</script>
+
+{% endblock %}
