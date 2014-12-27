@@ -1,0 +1,6 @@
+include LICENSE
+include README.md
+include easyui/initial_data.json
+recursive-include easyui/static *
+recursive-include easyui/templates *
+recursive-include docs *

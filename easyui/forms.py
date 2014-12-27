@@ -21,7 +21,7 @@ class MenuForm(forms.ModelForm):
 
         widgets = {
             'text':forms.TextInput(attrs={'class':'easyui-validatebox','data-options':'required:true'}),
-            'is_root':forms.CheckboxInput(attrs={'disabled':'disabled'}),
+            'is_root':forms.CheckboxInput(attrs={'onclick':"return false"}),
             'namespace':forms.TextInput(attrs={'class':'easyui-validatebox','data-options':'required:false'}),
             'viewname':forms.TextInput(attrs={'class':'easyui-validatebox','data-options':'required:false'}),
             'kwargs':forms.TextInput(attrs={'class':'easyui-validatebox', 'data-options':'required:false'}),

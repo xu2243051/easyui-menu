@@ -69,3 +69,17 @@ class EasyUIDeleteView( SingleObjectMixin, EasyUIGetVarMixin, DeleteView):
         names = super(EasyUIDeleteView, self).get_template_names()
         names.append('easyui/confirm_delete.html')
         return names
+
+class CommandDatagridView(MenuPositionMixin, EasyUIListMixin, ListView):
+    """
+    选择datagrid的选项，然后每行单独执行操作
+    """
+
+    single_select = False
+    def get_template_names(self):
+        """
+        datagrid的默认模板
+        """
+        names = super(CommandDatagridView, self).get_template_names()
+        names.append('easyui/command_datagrid.html')
+        return names

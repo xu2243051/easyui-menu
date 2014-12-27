@@ -10,11 +10,12 @@ from .models import Menu, UserMenu, GroupMenu
 from .forms import  UserMenuForm, GroupMenuForm
 from .forms import UserLoginForm
 from .forms import RootMenuForm, SubMenuForm, MenuForm
-from easyui.mixins.view_mixins import EasyUICreateView, EasyUIUpdateView, EasyUIDeleteView, EasyUIDatagridView
+from easyui.mixins.view_mixins import EasyUICreateView, EasyUIUpdateView, \
+        EasyUIDeleteView, EasyUIDatagridView, CommandDatagridView
 from easyui.mixins.easyui_mixins import CsrfExemptMixin
 from easyui.mixins.permission_mixins import LoginRequiredMixin
 
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.views.generic.edit import FormMixin
 
 def success(request):
@@ -37,6 +38,59 @@ def get_url(request):
     url = reverse(url_string)
 
     return HttpResponse(url)
+
+class AjaxUpdateView(CsrfExemptMixin, View):
+    """
+    datagrid中每一行的操作
+    curl  -d "pk=1&app_label=easyui&model_name=Menu&method=test&name=xupeiyuan&row_index=1" 10.2.1.242:9000/easyui/AjaxUpdateView/
+    """
+    
+    def render_to_json_response(self, context, **response_kwargs):
+        data = json.dumps(context)
+        response_kwargs['content_type'] = 'application/json'
+        return HttpResponse(data, **response_kwargs)
+        
+    def post(self, request, *args, **kwargs):
+        """
+        Handles POST requests only
+        argument:
+            row_index HTML中第几行的标记，原值返回
+            app_label
+            model_name
+            pk   app_label + model_name + pk 可以获取一个object
+            method  object + method 得到要调用的方法 
+            其它参数，html和method中同时定义, 在上面的方法中使用
+        """
+        query_dict = dict(self.request.POST.items())
+        # row_index原值返回，在datagrid对应行显示结果 
+        row_index = query_dict.pop('row_index')
+        # 如果命令执行成功，并且没有返回值，则返回 "text+'成功'" 的提示
+        text = query_dict.pop('text', None)
+
+        app_label = query_dict.pop('app_label')
+        model_name  = query_dict.pop('model_name')
+        method  = query_dict.pop('method')
+        pk = query_dict.pop('pk')
+        model = get_model(app_label, model_name)
+        object = model.objects.get(pk=pk)
+
+        try:
+            status = 0 # 0 success;  else fail
+            func = getattr(object, method)
+            # query_dict中的其它参数传递给调用的方法, 所有参数都是字符串
+            print query_dict
+            return_value = func(**query_dict)
+            message = return_value
+        except Exception, error_message:
+            # ajax 处理失败
+            status = 1  # 1 means fail
+            message = unicode(error_message)
+
+        # 如果命令执行成功，并且没有返回值，则返回 "text+'成功'" 的提示
+        if not message:
+            message = text+'成功'
+
+        return self.render_to_json_response({'status':status, 'message':message, 'row_index':row_index})
 
 class HomeView(LoginRequiredMixin, TemplateView):
     template_name = 'base/home.html'
@@ -244,3 +298,4 @@ class GroupMenuListView(EasyUIDatagridView):
             {field:'menus_checked',title:'checked菜单',width:100},
         ]]
     """
+

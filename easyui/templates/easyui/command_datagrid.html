@@ -1,0 +1,203 @@
+{% extends "base/single_panel.html" %}
+{% block panel_body %}
+<table id="{{ prefix }}_datagrid" class="easyui-datagrid"></table>
+
+<div id="{{ prefix }}_datagrid_toolbar">
+
+        {% block menu_command %}
+        <div class="easyui-panel" style="padding:5px;">
+            <a href="#" class="easyui-menubutton" data-options="plain:false, menu:'#{{ prefix }}_menu_info'">菜单命令例子</a>
+            <a href="#" class="easyui-menubutton" data-options="plain:false, menu:'#{{ prefix }}_menu_content'">查看游戏信息</a>
+        </div>
+        <div id="{{ prefix }}_menu_info" >
+            <div class="{{ prefix }}_command"  value='test_command'>测试base命令</div>
+            <div class="{{ prefix }}_command" command-options="confirm:true" value='test_command'>测试confirm命令</div>
+            <div class="{{ prefix }}_command" command-options="input:true" value='test_command'>测试input命令</div>
+            <div class="menu-sep"></div>
+            <div>
+                <span>子菜单</span>
+                <div>
+                    <div class="{{ prefix }}_confirm_command" value='close_game_port' >确认例子</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="{{ prefix }}_menu_content" class="menu-content" style="background:#f0f0f0;padding:10px;text-align:left">
+            <p style="font-size:14px;color:#444;">Try jQuery EasyUI to build your modern, interactive, javascript applications.</p>
+        </div>
+        {% endblock menu_command %}
+
+    <form id='{{ prefix }}_datagrid_form'>
+        {% block form_body %}
+        {{ view.single_select }}名字:<input  name='name__icontains' >
+        {% endblock form_body %}
+        <a  class="easyui-linkbutton" iconCls="icons-map-magnifier"  onclick="{{ prefix }}_datagrid_search()" >查 询</a>
+    </form>    
+</div>
+
+
+<script>
+    function {{ prefix }}_datagrid_selections(){
+        // 检查是否选择了菜单
+        var selected_objects = $('#{{ prefix }}_datagrid').datagrid('getSelections')
+        if(selected_objects.length == 0){
+            $.messager.alert('提示信息', '请选择至少一行', 'error');
+            return false;
+        }
+        else{
+            return selected_objects
+        }
+    }
+
+
+    function {{ prefix }}_datagrid_search(){
+        var value_pair = get_value_pair_from_formarray($('#{{ prefix }}_datagrid_form').serializeArray());
+        $('#{{ prefix }}_datagrid').datagrid('load', value_pair);
+    }
+</script>
+<script>
+    // 定义datagrid 
+    {% block datagrid %}
+    // field:'cb' 和 field:'info' 三个字段都是必须的
+    $('#{{ prefix }}_datagrid').datagrid({
+        url:"{{ view_url }}",
+        method: 'post',
+        fitColumns: true,
+        checkbox: true,
+        pagination: true,
+        pageSize: 50, 
+        {% if view.single_select %}
+        {# EasyUIListMixin 中定义了single_select为True，设置为False可以多选 #}
+        singleSelect : true,
+        {% else %}
+        singleSelect : false,
+        {% endif %}
+        toolbar:'#{{ prefix }}_datagrid_toolbar',
+
+        {% block datagrid_columns %}
+        columns:[[
+            {field:'cb', title:'', checkbox:true},
+            {field:'id',title:'id',width:100},
+            {field:'info',title:'操作结果',width:100},
+        ]],
+        {% endblock datagrid_columns %}
+        checkOnSelect : true,
+        selectOnCheck : true,
+        {{ options|safe }}
+    });
+    {% endblock %}
+</script>
+
+<script>
+    // 命令访成功问ajax的callback
+    function {{prefix}}_operate_callback(data){
+        if(data.status == 0){
+            $('#{{ prefix }}_datagrid').datagrid('updateRow', {index:data.row_index, row:{info:data.message}})
+            $('#{{ prefix }}_datagrid').datagrid('autoSizeColumn', 'info')
+        }
+        else{
+            error_message = data.error ? data.error : '执行出错'; //如果没有错误信息，用默认的提示
+            $('#{{ prefix }}_datagrid').datagrid('updateRow', {index:data.row_index, row:{info:'<strong style="color:red">'+error_message+'<strong>'}})
+            $('#{{ prefix }}_datagrid').datagrid('autoSizeColumn', 'info')
+        }
+    }
+
+    function {{prefix}}_access_error(){
+        // 500或者访问不到Ajax的提示错误
+        $.messager.alert('提示信息', '访问不到链接, "<strong>{{verbose_name }}</strong>" 忽略等待操作的提示，多个操作，如果超过5分钟没结果，应该是失败了', 'error');
+    }
+    
+    // 调用后台的处理命令  /easyui/AjaxUpdateView/
+    function object_ajax_command(kwargs){
+        // kwargs -->{pk:1,app_label:'easyui', model_name:'Menu', method: 'test', name:'xupeiyuan', row_index:1}
+        $.ajax({url:"/easyui/AjaxUpdateView/",
+                error:{{prefix}}_access_error ,
+                success: {{prefix}}_operate_callback,
+                type:'post',
+                data: kwargs,
+        });
+    }
+
+    function {{ prefix }}_process_rows(value, text, kwargs){
+        // 获取select的row，至少要one row
+        var selected_objects = {{ prefix }}_datagrid_selections();
+        for (ind in selected_objects){
+            var row = selected_objects[ind];
+            // $('#ns_testgamelistview_datagrid').datagrid('getRowIndex', j) 
+            // 获取对应的row index，返回的时候修改该行的颜色和显示信息，在call_back中处理, 传给Ajax，Ajax处理完命令，会返回
+            var row_index = $('#{{ prefix }}_datagrid').datagrid('getRowIndex', row);
+            $('#{{ prefix }}_datagrid').datagrid('updateRow', {index:row_index, row:{info:'等待操作......'}})
+            /*  row_index datagrid中第几行的索引
+                method 操作按钮的值，一般和model中的method一样
+                model 指定了这个页面时操作那个model的
+                pk model和pk指定了一个object， command一般是model中的method
+                text 按钮的文本，如果执行的操作没有返回值，text就是默认的返回提示
+                kwargs 中的参数是传给method的         */
+                var post_kwargs = {'row_index':row_index, pk:row.id, 
+                    app_label:'{{ app_label }}', model_name:'{{ model_name }}', method:value, 
+                    text:text}
+                for (key in kwargs){
+                    post_kwargs[key] = kwargs[key];
+                }
+                object_ajax_command(post_kwargs)
+        }
+    }
+
+</script>
+
+<script>
+    // command-options = 'confirm:true' or 'input:true'
+    // 处理command函数，并且赋予给class click操作
+    function {{ prefix }}_command_process(){
+        
+        var selected_objects = {{ prefix }}_datagrid_selections();
+
+        // 点击了按钮的处理，command的处理函数
+        var element = $(this)[0];
+        var value = element.getAttribute('value'); // 
+        var text = element.textContent;            // 更新服务端
+        var command_options  = element.getAttribute('command-options') ; // 
+        if(command_options){
+            // 转换成json格式
+            eval('var command_options='+ '{' + command_options + '}');
+        }
+
+        if(command_options && command_options.confirm == true){
+            // 有确认的按钮操作
+            var message = '选择<strong style="color:red">{0}行</strong>, 按钮为<strong style="color:blue"> {1} </strong> ,是否执行'.format(selected_objects.length, text);
+            $.messager.confirm('确认界面', message, function(r){
+                if(r){
+                    // r 是确认才执行操作
+                    {{ prefix }}_process_rows(value, text);
+                }
+            })
+        }
+
+        else if(command_options && command_options.input == true){
+            // 有输入的按钮操作
+            var message = '<strong style="color:blue">请输入</strong>';
+            $.messager.prompt('提示', message, function(input){
+                if(input){
+                    // 输入命令之后再次判断是否执行这个命令
+                    var rows = selected_objects.length
+                    var confirm_message = '操作<strong style="color:blue">{0}行</strong>, 命令为:<strong style="color:red">{1}</strong>, 是否执行'.format(rows, input);
+                    $.messager.confirm('确认界面', confirm_message, function(confirm){
+                        if(confirm){
+                            // r 是确认才执行操作
+                            kwargs = {input:true};
+                            {{ prefix }}_process_rows(value, text, kwargs);
+                        }
+                    })
+                }
+            })
+        }
+
+        else{
+            // 普通按钮操作
+            {{ prefix }}_process_rows(value, text); 
+        }
+    }
+    $('.{{ prefix }}_command').click({{ prefix }}_command_process);
+    
+</script>
+{% endblock %}
