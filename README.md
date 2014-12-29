@@ -9,11 +9,10 @@ Quict start
 1. pip install easyui
 2. Add "easyui" to your INSTALLED_APPS setting like this::
 
-    INSTALLED_APPS = (
-        ...
-        
-        'easyui',
-    )
+        INSTALLED_APPS = (
+            ...
+            'easyui',
+        )
 
 2. Include the easyui URLconf in your project urls.py like this::
 
