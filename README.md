@@ -11,7 +11,8 @@ Quict start
 
     INSTALLED_APPS = (
         ...
-        'polls',
+        
+        'easyui',
     )
 
 2. Include the easyui URLconf in your project urls.py like this::
@@ -20,4 +21,6 @@ Quict start
 
 3. Run `python manage.py migrate` to create the polls models.
 
-4. Visit http://127.0.0.1:8000/easyui/menu/ to see the base menu.
+4. Run `python manage.py runserver 0.0.0.0:8000` to run a debug server
+
+5. Visit http://127.0.0.1:8000/easyui/menu/ to see the base menu.
